@@ -1,46 +1,103 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import Dashboard from "@/app/components/Dashboard";
+import ContentWizard from "@/app/components/ContentWizard";
+import BlogCreator from "@/app/components/BlogCreator";
+import VideoCreator from "@/app/components/VideoCreator";
+import ReelCreator from "@/app/components/ReelCreator";
+import ImageCreator from "@/app/components/ImageCreator";
+import ContentLibrary from "@/app/components/ContentLibrary";
+import { ContentItem } from "@/lib/store/slices/contentSlice";
 
 export default function Home() {
+  const [showWizard, setShowWizard] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
+    null
+  );
+
+  const handleContentSelect = (content: ContentItem) => {
+    setSelectedContent(content);
+  };
+
+  const handleWizardComplete = () => {
+    setShowWizard(false);
+    setSelectedContent(null);
+  };
+
+  const handleWizardCancel = () => {
+    setShowWizard(false);
+    setSelectedContent(null);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-8">
-      <div>
-        <h2 className="text-2xl font-semibold text-center border p-4 font-mono rounded-md">
-          Get started by choosing a template path from the /paths/ folder.
-        </h2>
-      </div>
-      <div>
-        <h1 className="text-6xl font-bold text-center">Make anything you imagine 🪄</h1>
-        <h2 className="text-2xl text-center font-light text-gray-500 pt-4">
-          This whole page will be replaced when you run your template path.
-        </h2>
-      </div>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="border rounded-lg p-6 hover:bg-gray-100 transition-colors">
-          <h3 className="text-xl font-semibold">AI Chat App</h3>
-          <p className="mt-2 text-sm text-gray-600">
-            An intelligent conversational app powered by AI models, featuring real-time responses
-            and seamless integration with Next.js and various AI providers.
-          </p>
+    <main className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="md:flex md:items-center md:justify-between mb-8">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">
+              Bizcontently
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Create viral content for your business
+            </p>
+          </div>
+          <div className="mt-4 flex md:mt-0 md:ml-4">
+            <button
+              type="button"
+              onClick={() => setShowWizard(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create New Content
+            </button>
+          </div>
         </div>
-        <div className="border rounded-lg p-6 hover:bg-gray-100 transition-colors">
-          <h3 className="text-xl font-semibold">AI Image Generation App</h3>
-          <p className="mt-2 text-sm text-gray-600">
-            Create images from text prompts using AI, powered by the Replicate API and Next.js.
-          </p>
-        </div>
-        <div className="border rounded-lg p-6 hover:bg-gray-100 transition-colors">
-          <h3 className="text-xl font-semibold">Social Media App</h3>
-          <p className="mt-2 text-sm text-gray-600">
-            A feature-rich social platform with user profiles, posts, and interactions using
-            Firebase and Next.js.
-          </p>
-        </div>
-        <div className="border rounded-lg p-6 hover:bg-gray-100 transition-colors">
-          <h3 className="text-xl font-semibold">Voice Notes App</h3>
-          <p className="mt-2 text-sm text-gray-600">
-            A voice-based note-taking app with real-time transcription using Deepgram API, 
-            Firebase integration for storage, and a clean, simple interface built with Next.js.
-          </p>
+
+        {/* Main Content Area */}
+        <div className="space-y-8">
+          {showWizard ? (
+            <div className="bg-white shadow sm:rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <ContentWizard
+                  contentType={selectedContent?.type || "blog"}
+                  onComplete={handleWizardComplete}
+                  onCancel={handleWizardCancel}
+                />
+              </div>
+            </div>
+          ) : selectedContent ? (
+            <div className="bg-white shadow sm:rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                {selectedContent.type === "blog" && (
+                  <BlogCreator
+                    contentItem={selectedContent}
+                    onStepComplete={() => setSelectedContent(null)}
+                  />
+                )}
+                {selectedContent.type === "video" && (
+                  <VideoCreator
+                    contentItem={selectedContent}
+                    onStepComplete={() => setSelectedContent(null)}
+                  />
+                )}
+                {selectedContent.type === "reel" && (
+                  <ReelCreator
+                    contentItem={selectedContent}
+                    onStepComplete={() => setSelectedContent(null)}
+                  />
+                )}
+                {selectedContent.type === "image" && (
+                  <ImageCreator
+                    contentItem={selectedContent}
+                    onStepComplete={() => setSelectedContent(null)}
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            <ContentLibrary onSelectItem={handleContentSelect} />
+          )}
         </div>
       </div>
     </main>
