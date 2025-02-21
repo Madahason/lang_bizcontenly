@@ -49,7 +49,7 @@ export default function Home() {
             Say goodbye to content overwhelm—hello to effortless growth.
           </p>
           <Link
-            href="/get-started"
+            href="/sign-up"
             className="bg-white text-[#9131E7] px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/90 transition-colors"
           >
             Get started for free →
@@ -288,7 +288,7 @@ export default function Home() {
             launch!
           </p>
           <Link
-            href="/get-started"
+            href="/sign-up"
             className="bg-white text-[#9131E7] px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition-colors inline-block"
           >
             Get started for free →

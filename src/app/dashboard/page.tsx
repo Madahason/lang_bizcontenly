@@ -42,6 +42,7 @@ export default function DashboardPage() {
         "Generate outlines, finalize sections, and add AI-created images that wow your readers",
       icon: "📝",
       action: "Create Blog",
+      link: "/blog-creator",
       metrics: { published: 8, drafts: 3 },
     },
     {
@@ -50,6 +51,7 @@ export default function DashboardPage() {
         "Identify trending topics and generate fresh scripts for viral short-form or long-form content",
       icon: "🎥",
       action: "Create Video",
+      link: "/viral-video-hub",
       metrics: { published: 5, drafts: 2 },
     },
     {
@@ -58,6 +60,7 @@ export default function DashboardPage() {
         "Design trending reels and social posts that drive engagement across platforms",
       icon: "📱",
       action: "Create Reel",
+      link: "/reel-maker",
       metrics: { published: 15, drafts: 4 },
     },
     {
@@ -66,6 +69,7 @@ export default function DashboardPage() {
         "Generate stunning visuals that capture attention and boost engagement",
       icon: "🎨",
       action: "Create Image",
+      link: "/trend-imager",
       metrics: { published: 12, drafts: 6 },
     },
   ];
@@ -149,9 +153,12 @@ export default function DashboardPage() {
                   <span>Published: {type.metrics.published}</span>
                   <span>Drafts: {type.metrics.drafts}</span>
                 </div>
-                <button className="w-full bg-[#9131E7] text-white px-4 py-2 rounded-md hover:bg-[#9131E7]/90 transition-colors">
+                <Link
+                  href={type.link}
+                  className="block w-full bg-[#9131E7] text-white px-4 py-2 rounded-md hover:bg-[#9131E7]/90 transition-colors text-center"
+                >
                   {type.action}
-                </button>
+                </Link>
               </div>
             </div>
           ))}

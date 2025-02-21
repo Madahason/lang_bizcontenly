@@ -1,17 +1,19 @@
 "use client";
 
-import { Provider } from "react-redux";
-import { store } from "@/lib/store/store";
-import { QueryProvider } from "./providers/QueryProvider";
+import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { useEffect, useState } from "react";
 
-interface ProvidersProps {
-  children: React.ReactNode;
-}
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
 
-export function Providers({ children }: ProvidersProps) {
-  return (
-    <Provider store={store}>
-      <QueryProvider>{children}</QueryProvider>
-    </Provider>
-  );
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
+
+  return <AuthProvider>{children}</AuthProvider>;
 }

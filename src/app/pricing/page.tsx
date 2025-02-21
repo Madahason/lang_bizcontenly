@@ -117,7 +117,7 @@ export default function PricingPage() {
               </li>
             </ul>
             <Link
-              href="/get-started"
+              href="/sign-up"
               className="block w-full bg-[#9131E7] text-white text-center py-3 rounded-full font-medium hover:bg-[#9131E7]/90 transition-colors"
             >
               Start Free Trial
@@ -233,7 +233,7 @@ export default function PricingPage() {
               </li>
             </ul>
             <Link
-              href="/get-started"
+              href="/sign-up"
               className="block w-full bg-[#9131E7] text-white text-center py-3 rounded-full font-medium hover:bg-[#9131E7]/90 transition-colors"
             >
               Get Started
@@ -368,7 +368,7 @@ export default function PricingPage() {
               </li>
             </ul>
             <Link
-              href="/get-started"
+              href="/sign-up"
               className="block w-full bg-white text-[#9131E7] text-center py-3 rounded-full font-medium hover:bg-gray-50 transition-colors"
             >
               Upgrade to Pro

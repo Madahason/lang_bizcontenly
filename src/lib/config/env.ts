@@ -8,16 +8,18 @@ const envSchema = z.object({
   REPLICATE_API_KEY: z.string().min(1, "Replicate API key is required"),
 
   // Firebase Configuration
-  FIREBASE_API_KEY: z.string().min(1, "Firebase API key is required"),
-  FIREBASE_AUTH_DOMAIN: z.string().min(1, "Firebase auth domain is required"),
-  FIREBASE_PROJECT_ID: z.string().min(1, "Firebase project ID is required"),
+  FIREBASE_API_KEY: z
+    .string()
+    .min(1, "AIzaSyBYJ6Vot7HwQvLFaTGvZbczHFBP4rAkZyQ"),
+  FIREBASE_AUTH_DOMAIN: z.string().min(1, "bizcontently.firebaseapp.com"),
+  FIREBASE_PROJECT_ID: z.string().min(1, "bizcontently"),
   FIREBASE_STORAGE_BUCKET: z
     .string()
-    .min(1, "Firebase storage bucket is required"),
-  FIREBASE_MESSAGING_SENDER_ID: z
+    .min(1, "bizcontently.firebasestorage.app"),
+  FIREBASE_MESSAGING_SENDER_ID: z.string().min(1, "680519501740"),
+  FIREBASE_APP_ID: z
     .string()
-    .min(1, "Firebase sender ID is required"),
-  FIREBASE_APP_ID: z.string().min(1, "Firebase app ID is required"),
+    .min(1, "1:680519501740:web:2ee93fec59e4cc4147dc09"),
 
   // Clerk Authentication
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z
