@@ -3,42 +3,84 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
+interface VideoStats {
+  videoId: string;
+  title: string;
+  thumbnail: string;
+  channelId: string;
+  channelTitle: string;
+  publishedAt: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  channelStats: {
+    subscriberCount: number;
+    videoCount: number;
+    averageViews: number;
+  };
+  metrics: {
+    viewsRatio: number;
+    engagementRate: number;
+    daysAgo: number;
+    isViral: boolean;
+  };
+}
+
 export default function ViralVideoHub() {
   const [currentStep, setCurrentStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState<VideoStats | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<VideoStats | null>(null);
   const [generatedScript, setGeneratedScript] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<VideoStats[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Mock data for UI demonstration
-  const mockViralVideos = [
-    {
-      id: 1,
-      title: "How I Built a Million Dollar Business",
-      thumbnail: "https://picsum.photos/300/200",
-      views: "2.4M",
-      channelAvg: "500K",
-      viralFactor: "4.8x",
-      duration: "15:24",
-    },
-    {
-      id: 2,
-      title: "10 Morning Habits of Successful People",
-      thumbnail: "https://picsum.photos/300/200",
-      views: "1.8M",
-      channelAvg: "300K",
-      viralFactor: "6x",
-      duration: "12:18",
-    },
-    {
-      id: 3,
-      title: "The Truth About Passive Income",
-      thumbnail: "https://picsum.photos/300/200",
-      views: "3.2M",
-      channelAvg: "800K",
-      viralFactor: "4x",
-      duration: "18:45",
-    },
-  ];
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+
+    setIsSearching(true);
+    setSearchError(null);
+
+    try {
+      const response = await fetch(
+        `/api/youtube/search?q=${encodeURIComponent(searchTerm)}`
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to search videos");
+      }
+
+      setSearchResults(data.videos);
+      setCurrentStep(2);
+    } catch (error) {
+      setSearchError(
+        error instanceof Error ? error.message : "An error occurred"
+      );
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + "M";
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + "K";
+    }
+    return num.toString();
+  };
+
+  const formatUploadDate = (daysAgo: number) => {
+    if (daysAgo === 0) return "Today";
+    if (daysAgo === 1) return "Yesterday";
+    if (daysAgo < 7) return `${daysAgo} days ago`;
+    if (daysAgo < 30) return `${Math.floor(daysAgo / 7)} weeks ago`;
+    if (daysAgo < 60) return "1 month ago";
+    return `${Math.floor(daysAgo / 30)} months ago`;
+  };
 
   const steps = [
     { number: 1, title: "Search" },
@@ -109,14 +151,19 @@ export default function ViralVideoHub() {
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9131E7]"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 />
                 <button
-                  onClick={() => setCurrentStep(2)}
-                  className="px-6 py-2 bg-[#9131E7] text-white rounded-lg hover:bg-[#9131E7]/90 transition-colors"
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="px-6 py-2 bg-[#9131E7] text-white rounded-lg hover:bg-[#9131E7]/90 transition-colors disabled:opacity-50"
                 >
-                  Search
+                  {isSearching ? "Searching..." : "Search"}
                 </button>
               </div>
+              {searchError && (
+                <div className="text-red-500 text-sm">{searchError}</div>
+              )}
             </div>
           )}
 
@@ -127,54 +174,190 @@ export default function ViralVideoHub() {
                 Viral Video Examples
               </h2>
               <p className="text-gray-600">
-                These videos significantly outperform their channel's average
-                views. Click on a video to analyze its success factors.
+                These videos from the last 6 months significantly outperform
+                their channel's average views. Click on a video to preview or
+                analyze.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {mockViralVideos.map((video) => (
+
+              {/* Video Preview Modal */}
+              {previewVideo && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-lg w-full max-w-3xl">
+                    <div className="p-4 border-b flex justify-between items-center">
+                      <h3 className="font-semibold text-lg line-clamp-1">
+                        {previewVideo.title}
+                      </h3>
+                      <button
+                        onClick={() => setPreviewVideo(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="aspect-[16/9] bg-black my-2">
+                      <iframe
+                        className="w-full h-[351px]"
+                        src={`https://www.youtube.com/embed/${previewVideo.videoId}`}
+                        title={previewVideo.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500 block">Views</span>
+                          <span className="font-semibold text-[#9131E7]">
+                            {formatNumber(previewVideo.viewCount)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block">Likes</span>
+                          <span className="font-semibold">
+                            {formatNumber(previewVideo.likeCount)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block">Comments</span>
+                          <span className="font-semibold">
+                            {formatNumber(previewVideo.commentCount)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 block">
+                            Channel Subs
+                          </span>
+                          <span className="font-semibold">
+                            {formatNumber(
+                              previewVideo.channelStats.subscriberCount
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedVideo(previewVideo);
+                          setPreviewVideo(null);
+                          setCurrentStep(3);
+                        }}
+                        className="mt-6 w-full bg-[#9131E7] text-white py-3 rounded-lg hover:bg-[#9131E7]/90 transition-colors font-semibold text-base"
+                      >
+                        Analyze This Video
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {searchResults.map((video) => (
                   <div
-                    key={video.id}
+                    key={video.videoId}
                     className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => {
-                      setSelectedVideo(video);
-                      setCurrentStep(3);
-                    }}
+                    onClick={() => setPreviewVideo(video)}
                   >
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">
+                    <div className="relative group">
+                      <img
+                        src={video.thumbnail}
+                        alt={video.title}
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center transition-all">
+                        <svg
+                          className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
                         {video.title}
                       </h3>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
+                      <p className="text-xs text-gray-500 mb-2">
+                        {video.channelTitle} •{" "}
+                        {formatUploadDate(video.metrics.daysAgo)}
+                      </p>
+                      <div className="grid grid-cols-2 gap-y-1 text-xs">
                         <div>
                           <span className="text-gray-500">Views:</span>
-                          <span className="ml-1 text-[#9131E7]">
-                            {video.views}
+                          <span className="ml-1 text-[#9131E7] font-semibold">
+                            {formatNumber(video.viewCount)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Avg:</span>
-                          <span className="ml-1">{video.channelAvg}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Viral:</span>
-                          <span className="ml-1 text-green-600">
-                            {video.viralFactor}
+                          <span className="text-gray-500">Likes:</span>
+                          <span className="ml-1 font-semibold">
+                            {formatNumber(video.likeCount)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-500">Length:</span>
-                          <span className="ml-1">{video.duration}</span>
+                          <span className="text-gray-500">Comments:</span>
+                          <span className="ml-1 font-semibold">
+                            {formatNumber(video.commentCount)}
+                          </span>
                         </div>
+                        <div>
+                          <span className="text-gray-500">Subs:</span>
+                          <span className="ml-1 font-semibold">
+                            {formatNumber(video.channelStats.subscriberCount)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        <span className="px-1.5 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                          Viral
+                        </span>
+                        {video.viewCount >
+                          video.channelStats.subscriberCount && (
+                          <span className="px-1.5 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">
+                            &gt; Subs
+                          </span>
+                        )}
+                        {video.metrics.daysAgo <= 7 && (
+                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            New
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
+              {searchResults.length === 0 && !isSearching && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    No viral videos found from the last 6 months for this topic.
+                    Try a different search term.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -198,13 +381,13 @@ export default function ViralVideoHub() {
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <span className="text-gray-500">Total Views</span>
                       <div className="text-2xl font-bold text-[#9131E7]">
-                        {selectedVideo.views}
+                        {formatNumber(selectedVideo.viewCount)}
                       </div>
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <span className="text-gray-500">Viral Factor</span>
                       <div className="text-2xl font-bold text-green-600">
-                        {selectedVideo.viralFactor}
+                        {selectedVideo.metrics.viewsRatio.toFixed(1)}x
                       </div>
                     </div>
                   </div>
